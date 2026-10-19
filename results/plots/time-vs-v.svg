@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="560" viewBox="0 0 1040 560">
+<rect width="1040" height="560" fill="white"/>
+<g font-family="Arial,sans-serif" font-size="14" fill="#1f2937">
+<text x="75" y="30" font-size="22">Execution time vs. vertices</text>
+<text x="75" y="53">Mean of 5 instrumented runs; fixed seed; 100 warmups</text>
+<path d="M75 450H760" stroke="#e5e7eb"/>
+<text x="65" y="455" text-anchor="end">0</text>
+<path d="M75 378H760" stroke="#e5e7eb"/>
+<text x="65" y="383" text-anchor="end">219</text>
+<path d="M75 306H760" stroke="#e5e7eb"/>
+<text x="65" y="311" text-anchor="end">438</text>
+<path d="M75 234H760" stroke="#e5e7eb"/>
+<text x="65" y="239" text-anchor="end">656</text>
+<path d="M75 162H760" stroke="#e5e7eb"/>
+<text x="65" y="167" text-anchor="end">875</text>
+<path d="M75 90H760" stroke="#e5e7eb"/>
+<text x="65" y="95" text-anchor="end">1094</text>
+<path d="M75 90V450H760" fill="none" stroke="#374151"/>
+<text x="15" y="280" transform="rotate(-90 15 280)">Time (microseconds)</text>
+<text x="350" y="505">Number of vertices (V)</text>
+<text x="81.85" y="478" text-anchor="middle">10</text>
+<text x="143.5" y="478" text-anchor="middle">100</text>
+<text x="760.0" y="478" text-anchor="middle">1000</text>
+<polyline points="81.85,436.34261186421077 143.5,422.34783687741395 760.0,195.5008577790465" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+<circle cx="81.85" cy="436.34261186421077" r="4" fill="#2563eb"/>
+<circle cx="143.5" cy="422.34783687741395" r="4" fill="#2563eb"/>
+<circle cx="760.0" cy="195.5008577790465" r="4" fill="#2563eb"/>
+<rect x="790" y="95" width="15" height="4" fill="#2563eb"/>
+<text x="815" y="102">Kruskal</text>
+<polyline points="81.85,442.56524699256636 143.5,393.4096414329716 760.0,128.5714285714286" fill="none" stroke="#e11d48" stroke-width="2.5"/>
+<circle cx="81.85" cy="442.56524699256636" r="4" fill="#e11d48"/>
+<circle cx="143.5" cy="393.4096414329716" r="4" fill="#e11d48"/>
+<circle cx="760.0" cy="128.5714285714286" r="4" fill="#e11d48"/>
+<rect x="790" y="130" width="15" height="4" fill="#e11d48"/>
+<text x="815" y="137">Prim</text>
+<polyline points="81.85,439.5430479996457 143.5,430.92349188940557 760.0,216.09935838724084" fill="none" stroke="#059669" stroke-width="2.5"/>
+<circle cx="81.85" cy="439.5430479996457" r="4" fill="#059669"/>
+<circle cx="143.5" cy="430.92349188940557" r="4" fill="#059669"/>
+<circle cx="760.0" cy="216.09935838724084" r="4" fill="#059669"/>
+<rect x="790" y="165" width="15" height="4" fill="#059669"/>
+<text x="815" y="172">SCC</text>
+<polyline points="81.85,443.7444555026425 143.5,442.43900665307507 760.0,365.58193973612947" fill="none" stroke="#9333ea" stroke-width="2.5"/>
+<circle cx="81.85" cy="443.7444555026425" r="4" fill="#9333ea"/>
+<circle cx="143.5" cy="442.43900665307507" r="4" fill="#9333ea"/>
+<circle cx="760.0" cy="365.58193973612947" r="4" fill="#9333ea"/>
+<rect x="790" y="200" width="15" height="4" fill="#9333ea"/>
+<text x="815" y="207">Topological-DAG</text>
+<polyline points="81.85,448.62873241242875 143.5,447.8225845093582 760.0,426.50823930663444" fill="none" stroke="#d97706" stroke-width="2.5"/>
+<circle cx="81.85" cy="448.62873241242875" r="4" fill="#d97706"/>
+<circle cx="143.5" cy="447.8225845093582" r="4" fill="#d97706"/>
+<circle cx="760.0" cy="426.50823930663444" r="4" fill="#d97706"/>
+<rect x="790" y="235" width="15" height="4" fill="#d97706"/>
+<text x="815" y="242">Topological-cycle</text>
+<polyline points="81.85,444.4931436474358 143.5,419.84126187801513 760.0,266.6921160911486" fill="none" stroke="#0891b2" stroke-width="2.5"/>
+<circle cx="81.85" cy="444.4931436474358" r="4" fill="#0891b2"/>
+<circle cx="143.5" cy="419.84126187801513" r="4" fill="#0891b2"/>
+<circle cx="760.0" cy="266.6921160911486" r="4" fill="#0891b2"/>
+<rect x="790" y="270" width="15" height="4" fill="#0891b2"/>
+<text x="815" y="277">Dijkstra</text>
+<text x="75" y="540">V and E vary together: these plots do not isolate their individual effects.</text></g></svg>

@@ -1,0 +1,95 @@
+# Assignment 3 — Smart City Infrastructure and Route Planning
+
+## Overview
+
+This Java application represents districts as vertices numbered 0 to V−1 and roads as weighted edges. It supports minimum-cost infrastructure construction, directed connectivity analysis, dependency ordering and shortest routes. It requires JDK 17+ and has no external Java dependencies.
+
+```sh
+sh run.sh demo
+sh run.sh test
+sh run.sh benchmark
+python3 scripts/report.py
+```
+
+Run commands from this directory. The benchmark overwrites CSV results; the Python script refreshes the report and plots using those measurements. `README.template` is the report source. Recorded results were collected on OpenJDK 23.0.2, Mac OS X, aarch64; see `results/tables/environment.txt`. Timings vary across machines and runs.
+
+## Implementation
+
+- `graph/Graph.java`: edge list for Kruskal and adjacency lists for traversals. An undirected edge appears once in the edge list and twice in adjacency lists. Parallel edges and self-loops are supported. Weights use `long`.
+- `dsu/DSU.java`: path halving (a path compression variant) and union by size.
+- `mst/MST.java`: Kruskal sorts a copy of the edge list and accepts edges joining distinct DSU sets. Lazy Prim stores candidate edges in a binary heap, discarding edges whose destination was already visited. Both return the selected edges, total weight and component count. Disconnected inputs produce a minimum spanning forest; `connected()` reports whether a spanning tree exists. Tied weights can yield different valid trees with the same weight. Negative weights are valid for MST.
+- `connectivity/Connectivity.java`: Kahn's algorithm removes zero-indegree vertices. If fewer than V vertices are removed, the result explicitly reports a cycle and returns an empty order. Iterative Kosaraju records DFS finishing order, reverses edges and explores in reverse finishing order. Explicit stacks avoid recursion overflow.
+- `shortestpath/Dijkstra.java`: lazy binary-heap Dijkstra pushes a new entry on each strict distance improvement and skips stale entries. Parent pointers reconstruct routes. Unreachable vertices have `Long.MAX_VALUE` distance and an empty path; the source has distance zero and path `[source]`. Negative weights are rejected before traversal. Finite arithmetic outside the representable range, including a candidate equal to the infinity sentinel, raises an exception.
+- `Main.java` demonstrates MSTs, SCCs, cyclic/DAG topology, distances and actual routes.
+
+### Correctness arguments
+
+Kruskal maintains a forest; the lightest edge connecting two components is safe by the cut property. Prim similarly selects a lightest crossing edge of the visited/unvisited cut in each component. Kahn only outputs a vertex after all predecessors have been removed; if processing stops early, the remaining subgraph contains a directed cycle. Kosaraju's finishing order makes each second-pass search isolate one SCC in the transpose. Dijkstra extracts a minimum tentative distance; non-negative edges ensure no later route through an unprocessed vertex can shorten it. Strict relaxation and stale-entry checks preserve this invariant.
+
+## Complexity Analysis
+
+Assume adjacency lists and Java binary heaps. E counts logical edges, so undirected traversals examine 2E adjacency entries. Space below is auxiliary space, excluding the input graph but including returned results.
+
+| Algorithm | Time | Auxiliary space | Explanation |
+|---|---|---|---|
+| DSU initialization | O(V) | O(V) | Parent and size arrays |
+| DSU find / union | O(α(V)) amortized each | O(1) per call | Over a sequence; an individual operation is O(log V) with union by size |
+| Kruskal | O(V + E log(E+1)) | O(V+E) | Sort copied edges; DSU work O(E α(V)); forest output O(V) |
+| Lazy Prim | O(V + E log(E+1)) | O(V+E) | At most O(E) heap entries; visit every component |
+| Kosaraju SCC | O(V+E) | O(V+E) | Two DFS traversals plus transpose construction |
+| Kahn topological ordering | O(V+E) | O(V) | Count indegrees, then process each adjacency entry once |
+| Lazy Dijkstra | O(V + E log(E+1)) | O(V+E) | Weight validation, adjacency scans, O(E) heap insertions |
+
+For simple graphs E ≤ V², so Prim and Dijkstra are usually stated as O((V+E) log V). This implementation uses lazy duplicate heap entries rather than indexed decrease-key, so the precise heap bound is O(E) space and log E per operation; the graph class also permits parallel edges. Kruskal's sorting dominates as E grows. SCC and topology scale linearly in the total graph size. DSU's inverse Ackermann function α grows extremely slowly.
+
+Union by size attaches a smaller tree under a larger tree. Whenever a vertex's depth increases, its containing set at least doubles, bounding depth by O(log V). Path halving makes traversed vertices point toward grandparents, shortening future searches. Together they give near-constant amortized calls; an unbalanced, uncompressed DSU can create a chain with O(V) find cost. This report explains the improvement theoretically; it does not claim a measured speedup against an unoptimized DSU.
+
+Dijkstra's proof requires non-negative edges: with 0→A weight 2, 0→B weight 5 and B→A weight −10, settling A at 2 is premature because the true distance is −5. A lazy implementation that revisits vertices does not restore the usual complexity guarantee; negative cycles can prevent termination. Use Bellman–Ford for general negative edges and reachable-negative-cycle detection.
+
+## Experimental Setup
+
+The configurations are (V,E) = (10,30), (100,500), (1000,5000). Java `Random` uses base seed 20261019, mixed with V and graph-type hash. The same graph instance is used for all repetitions of a case; generation and correctness checks are outside timing.
+
+All generated graphs are simple: no self-loops or duplicate ordered pairs. Weights are uniform integers in [1,100]. A chain 0→1→…→V−1 is inserted first. For MST it is undirected and ensures connectivity. Additional undirected endpoints are normalized; random pairs are sampled until the exact E is reached. For a DAG, all edges go from a lower to a higher vertex. For a cyclic directed graph, the chain is closed by V−1→0, then arbitrary directed edges are added. Consequently every cyclic benchmark vertex lies in one SCC, all vertices are reachable from source 0, and Kahn initially has no zero-indegree vertex. These are deliberate graph families, not an unbiased sample of all graphs.
+
+Kruskal/Prim use the same undirected graph. SCC, cyclic topology and Dijkstra use the same cyclic graph; DAG topology uses the DAG. Each algorithm/configuration has 100 unrecorded warmups followed by exactly 5 measured invocations. Timing uses differences of `System.nanoTime()` and excludes graph generation, printing and CSV writing. Algorithm allocations, validation, and operation counters are included. A volatile sink consumes each result after timing. Algorithm order is fixed; these are educational microbenchmarks, not JMH measurements. JIT, garbage collection, scheduling and small samples affect results. Each invocation creates fresh algorithm state and metrics.
+
+Counters count logical edge examinations, comparator invocations, public find/union calls, heap insertions and heap removals. A union includes two separately counted finds. Comparisons cover edge sorting and heap comparators, not every branch or relaxation comparison. Find counts measure calls, not parent traversals. `total_operations` is only a descriptive sum of unlike, sometimes nested events, not a comparable CPU-instruction count. Counts are deterministic for these inputs/JDK; the table uses the last trial, which has the same counts as the other trials. Raw data has all 90 measured invocations.
+
+## Results
+
+{{TIMES}}
+
+{{OPS}}
+
+![Execution time versus vertices](results/plots/time-vs-v.svg)
+
+![Execution time versus edges](results/plots/time-vs-e.svg)
+
+Data: [raw trials](results/tables/raw.csv), [summary](results/tables/summary.csv), [standalone tables](results/tables/results.md). The two plots show the same experiment against different x axes. V and E vary together, so they cannot isolate vertex effects from edge effects. Lines connect measured cases; they are not theoretical fits.
+
+## Comparison and Discussion
+
+In the recorded run Prim is faster on the small case, while Kruskal is faster on medium and large cases. Lazy Prim scans 2E entries and empties the heap, including candidates discarded after their destination is visited. Kruskal sorts all E edges but can stop accepting/examining edges once V−1 are chosen. For V=1000, Kruskal examines 2753 sorted edges and makes 50410 sort comparisons; Prim examines 10000 adjacency entries and makes 111014 heap comparisons. This helps explain the observed ordering but does not establish universal superiority. Graph density, implementation constants, early stopping and runtime noise matter.
+
+SCC examines exactly 3E edges: original DFS, transpose construction, transpose DFS. Increasing (V,E) from (100,500) to (1000,5000) increases both sizes tenfold; runtime grows roughly twelvefold in this run. This is compatible with O(V+E), without proving asymptotic behavior from three measurements. Small cases have substantial fixed overhead.
+
+DAG topology examines 2E edges, while the fully cyclic family examines E during indegree counting and processes zero vertices. Its smaller runtime does not mean cyclic ordering succeeds; it detects impossibility earlier. This family does not exercise cycles hidden behind a long acyclic prefix; correctness tests cover other structures.
+
+Dijkstra examines E edges for validation and E during traversal because every benchmark vertex is reachable. Its heap work increases with successful relaxations, rather than only V: at V=1000 there are 1440 pushes and pops. Time generally grows with graph size but varies due to the JVM and queue behavior. Operation counts describe work more consistently than these short timings. The report does not extrapolate a reliable performance ratio beyond the tested cases.
+
+## Testing
+
+Run `sh run.sh test`. The test runner throws explicit assertions, so it does not require `-ea`.
+
+Tests cover known small MSTs, disconnected forests, cycles, equal weights/multiple valid MSTs, negative MST weights, zero-weight paths, unreachable vertices, a single vertex, self-loops, parallel edges, DSU connectivity and negative-edge rejection by Dijkstra.
+
+Independent checks include exhaustive spanning-tree enumeration for 25 random complete five-vertex graphs, Bellman–Ford reference distances and actual path costs for 100 random directed graphs from every source, and Floyd–Warshall reachability for exact SCC membership. Every vertex must occur exactly once in an SCC; two vertices share a component exactly when mutually reachable. DAG tests verify uniqueness, coverage and every edge's order. The benchmark checks agreement of Kruskal and Prim for each required graph size. Recorded test output: **PASS: 33296 correctness checks**.
+
+## Conclusion
+
+Use MST algorithms to minimize the total cost of an undirected connecting network, SCC to identify mutually reachable directed regions, topological ordering to schedule acyclic dependencies, and Dijkstra to obtain shortest routes with non-negative weights. An MST does not minimize individual source-to-destination route lengths. Kruskal and Prim agree on total optimal cost; their actual edge selections can differ under ties. The measured trends are consistent with sorting/heap costs versus linear graph traversal, within the limitations of five short JVM measurements.
+
+## Repository and submission
+
+The directory follows the requested source/results structure and is ready to place in a GitHub repository. No remote repository URL is claimed by this report. Submit the URL after publishing the project under your account. Keep meaningful commits when making subsequent changes. Preparation notes for the oral defense are in `DEFENSE_RU.md`.

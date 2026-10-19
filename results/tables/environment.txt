@@ -1,0 +1,5 @@
+Java: 23.0.2
+VM: OpenJDK 64-Bit Server VM
+OS: Mac OS X aarch64
+Seed: 20261019
+Warmups: 100; measured trials: 5

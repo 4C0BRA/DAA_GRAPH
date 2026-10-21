@@ -132,4 +132,4 @@ Use MST algorithms to minimize the total cost of an undirected connecting networ
 
 ## Repository and submission
 
-The directory follows the requested source/results structure and is ready to place in a GitHub repository. No remote repository URL is claimed by this report. Submit the URL after publishing the project under your account. Keep meaningful commits when making subsequent changes. Preparation notes for the oral defense are in `DEFENSE_RU.md`.
+Repository: [4C0BRA/DAA_GRAPH](https://github.com/4C0BRA/DAA_GRAPH). The directory follows the requested source/results structure. Submit this repository URL. Preparation notes for the oral defense are in `DEFENSE_RU.md`.
